@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var xRemainingRate = 5 // Chose an arbitrary number > 0 as initial value
+
 type AbiosClient struct {
 	RequestURL string
 	HTTPClient *http.Client
@@ -24,16 +26,22 @@ func CreateAbiosClient(url string, apiKey string) *AbiosClient {
 	}
 }
 
-func GetDataFromEndpoint(endpoint string, apiKey string, filters []string) ([]interface{}, error) {
+func GetDataFromEndpoint(endpoint string, apiKey string, filters []string) ([]map[string]interface{}, error) {
 	pageSize := 50
 	skip := 0
-	var lastPage []interface{}
-	var totalData []interface{}
-	filterString := strings.Join(filters[:], "&")
+	var lastPage []map[string]interface{}
+	var totalData []map[string]interface{}
 	for {
-		requestURL := fmt.Sprintf("%s%s&skip=%d", endpoint, filterString, skip)
+		// For now, we use a fixed delay for when we surpass the rate limit
+		if xRemainingRate <= 0 {
+			time.Sleep(1 * time.Second)
+		}
+
+		filterString := strings.Join(filters[:], "&") + fmt.Sprintf("&skip=%d", skip)
+		requestURL := fmt.Sprintf("%s%s", endpoint, filterString)
 		client := CreateAbiosClient(requestURL, apiKey)
 		data, rateRemain, err := client.SendGetRequest()
+		xRemainingRate = rateRemain
 		lastPage = data
 
 		if err != nil {
@@ -53,30 +61,26 @@ func GetDataFromEndpoint(endpoint string, apiKey string, filters []string) ([]in
 
 		skip += pageSize
 
-		// For now, we use a fixed delay for when we surpass the rate limit
-		if rateRemain <= 0 {
-			time.Sleep(1 * time.Second)
-		}
 	}
 
 	return totalData, nil
 }
 
-func (c *AbiosClient) SendGetRequest() ([]interface{}, int, error) {
+func (c *AbiosClient) SendGetRequest() ([]map[string]interface{}, int, error) {
 	req, err := http.NewRequest("GET", c.RequestURL, nil)
 	if err != nil {
 		fmt.Printf("Error when creating request object: %s\n", err.Error())
 		return nil, 0, err
 	}
 
-	var data []interface{}
+	var data []map[string]interface{}
 	req.Header.Add("Abios-Secret", c.APIKey)
 	resp, err := c.HTTPClient.Do(req)
 	if err != nil {
 		fmt.Printf("Error when sending HTTP GET Request: %s\n", err.Error())
 		return nil, 0, err
 	}
-	rateRemaining, _ := strconv.Atoi(resp.Header.Get("X-Ratelimit-Remaining"))
+	rateRemaining, _ := strconv.Atoi(resp.Header.Get("X-RateLimit-Remaining"))
 
 	defer resp.Body.Close()
 
