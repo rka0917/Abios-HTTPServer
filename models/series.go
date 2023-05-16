@@ -18,3 +18,20 @@ func GetLiveSeries() ([]map[string]interface{}, error) {
 
 	return data, nil
 }
+
+func GetSeriesRosters(liveSeriesIds []int) ([]map[string]interface{}, error) {
+
+	var totalData []map[string]interface{}
+	for _, liveSeriesId := range liveSeriesIds {
+		data, err := abios.GetDataFromEndpoint(fmt.Sprintf("%s/series/%d/rosters?filter=", os.Getenv("ABIOSURL"), liveSeriesId), os.Getenv("ABIOSAPIKEY"), []string{})
+
+		if err != nil {
+			fmt.Printf("Error occurred sending series roster request: %s", err)
+			return nil, err
+		}
+
+		totalData = append(totalData, data...)
+	}
+
+	return totalData, nil
+}
