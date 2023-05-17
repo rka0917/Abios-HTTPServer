@@ -12,6 +12,7 @@ func main() {
 	godotenv.Load(".env")
 	http.HandleFunc("/series/live", handlers.LiveSeriesHandler)
 	http.HandleFunc("/players/live", handlers.LivePlayersHandler)
+	http.HandleFunc("/teams/live", handlers.LiveTeamsHandler)
 
 	log.Println("Listening on localhost:8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
