@@ -11,6 +11,8 @@ import (
 
 func main() {
 	godotenv.Load(".env")
+
+	// For now, we will go with fixed request limiting of 5 requests/s.
 	lmt := tollbooth.NewLimiter(5, nil)
 	lmt.SetMessage("You have reached maximum request limit")
 	http.Handle("/series/live", tollbooth.LimitFuncHandler(lmt, handlers.LiveSeriesHandler))

@@ -8,12 +8,16 @@ import (
 	"github.com/rka0917/Abios-HTTPServer/models"
 )
 
+// Handler used for handling the /players endpoint
+// Fetches all live series, checks the player roster and then fetches player information
+// for players in the active roster.
 func LivePlayersHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
+	// Get all live series
 	liveSeries, err := models.GetLiveSeries()
 
 	if err != nil {

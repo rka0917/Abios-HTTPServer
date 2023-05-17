@@ -8,6 +8,8 @@ import (
 	"github.com/rka0917/Abios-HTTPServer/models"
 )
 
+// Handler used to handle /teams endpoint.
+// Fetches all live series, checks the participating teams and then fetches detailed team information.
 func LiveTeamsHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
@@ -36,7 +38,7 @@ func LiveTeamsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	teamIds := extractTeamIdsFromRoster(seriesRosters)
-	//----
+
 	players, err := models.GetTeamsFromIds(teamIds)
 
 	if err != nil {

@@ -8,6 +8,7 @@ import (
 	"github.com/rka0917/Abios-HTTPServer/models"
 )
 
+// Handler used for handling the /series endpoint
 func LiveSeriesHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
